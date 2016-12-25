@@ -1,0 +1,202 @@
+# Clustering
+  
+## K-Means: Unsupervised Learning
+
+
+  Unsupervised refers to the fact that we’re trying to understand the structure of our underlying data, rather than trying to optimize for a specific, pre-labeled criterion (such as creating a predictive model for conversion).
+  
+  Without getting too technical, k-means clustering is a method of partitioning data into ‘k’ subsets, where each data element is assigned to the closest cluster based on the *distance* of the data element from the center of the cluster. In order to use k-means clustering with text data, we need to do some *text-to-numeric transformation* of our text data. Luckily, R provides several packages to simplify the process.
+  
+### Converting Text to Numeric Data: Document-Term Matrix
+
+RSiteCatalyst package: get natural search keywords into a dataframe
+
+RTextTools package: create a document-term matrix
+  ->row: search term
+  ->column: 1/0 whether a single word is contained within natural search term. 
+  
+### Guessing at ‘k’: A First Run at Clustering
+
+Preparing DocumentTermMatrix 
+```{r}
+library(tm)
+library(RTextTools)
+library(SnowballC)
+a <- read.csv("C:/temp/BLACK-DECKER.csv", header = FALSE)
+ds <- DataframeSource(a)
+corpus <- Corpus(ds)
+dtm = DocumentTermMatrix(corpus,control = list(weighting = weightTf, minWordLength=1, stopwords = TRUE, removePunctuation = TRUE, stemming = TRUE))
+# 用TF-IDF分群效果不彰
+```
+
+
+K-means
+```{r}
+kmeans20<- kmeans(dtm, 20)
+kw_with_cluster <- as.data.frame(cbind(a, kmeans20$cluster))
+names(kw_with_cluster) <- c("keyword", "kmeans20")
+
+#Make df for each cluster result, quickly "eyeball" results
+cluster1 <- subset(kw_with_cluster, subset=kmeans20 == 1)
+cluster2 <- subset(kw_with_cluster, subset=kmeans20 == 2)
+cluster3 <- subset(kw_with_cluster, subset=kmeans20 == 3)
+cluster4 <- subset(kw_with_cluster, subset=kmeans20 == 4)
+cluster5 <- subset(kw_with_cluster, subset=kmeans20 == 5)
+cluster6 <- subset(kw_with_cluster, subset=kmeans20 == 6)
+cluster7 <- subset(kw_with_cluster, subset=kmeans20 == 7)
+cluster8 <- subset(kw_with_cluster, subset=kmeans20 == 8)
+cluster9 <- subset(kw_with_cluster, subset=kmeans20 == 9)
+cluster10 <- subset(kw_with_cluster, subset=kmeans20 == 10)
+cluster11 <- subset(kw_with_cluster, subset=kmeans20 == 11)
+cluster12 <- subset(kw_with_cluster, subset=kmeans20 == 12)
+cluster13 <- subset(kw_with_cluster, subset=kmeans20 == 13)
+cluster14 <- subset(kw_with_cluster, subset=kmeans20 == 14)
+cluster15 <- subset(kw_with_cluster, subset=kmeans20 == 15)
+cluster16 <- subset(kw_with_cluster, subset=kmeans20 == 16)
+cluster17 <- subset(kw_with_cluster, subset=kmeans20 == 17)
+cluster18 <- subset(kw_with_cluster, subset=kmeans20 == 18)
+cluster19 <- subset(kw_with_cluster, subset=kmeans20 == 19)
+cluster20 <- subset(kw_with_cluster, subset=kmeans20 == 20)
+
+```
+
+
+```{r}
+
+#for(i in 1:20){
+#  clusterNum <- (paste0('cluster',i))
+#  filePath <- paste0("C:/temp/t",i,".csv")
+#  write.csv(clusterNum, file=filePath)
+}
+
+```
+
+
+```{r}
+write.csv(cluster1, file="C:/temp/t1.csv")
+write.csv(cluster2, file="C:/temp/t2.csv")
+write.csv(cluster3, file="C:/temp/t3.csv")
+write.csv(cluster4, file="C:/temp/t4.csv")
+write.csv(cluster5, file="C:/temp/t5.csv")
+write.csv(cluster6, file="C:/temp/t6.csv")
+write.csv(cluster7, file="C:/temp/t7.csv")
+write.csv(cluster8, file="C:/temp/t8.csv")
+write.csv(cluster9, file="C:/temp/t9.csv")
+write.csv(cluster10, file="C:/temp/t10.csv")
+write.csv(cluster11, file="C:/temp/t11.csv")
+write.csv(cluster12, file="C:/temp/t12.csv")
+write.csv(cluster13, file="C:/temp/t13.csv")
+write.csv(cluster14, file="C:/temp/t14.csv")
+write.csv(cluster15, file="C:/temp/t15.csv")
+write.csv(cluster16, file="C:/temp/t16.csv")
+write.csv(cluster17, file="C:/temp/t17.csv")
+write.csv(cluster18, file="C:/temp/t18.csv")
+write.csv(cluster19, file="C:/temp/t19.csv")
+write.csv(cluster20, file="C:/temp/t20.csv")
+```
+
+
+Find most frequent words in cluster1
+```{r}
+a1 <- read.csv("C:/temp/t1.csv", header = TRUE)
+b1 <- as.data.frame(a1$keyword)
+ds1 <- DataframeSource(b1)
+corpus1 <- Corpus(ds1)
+tdm1 = TermDocumentMatrix(corpus1,control = list(stopwords = TRUE, removePunctuation = TRUE, stemming = TRUE)) 
+freq1 <- rowSums(as.matrix(tdm1))   
+length(freq1) 
+ord <- order(freq1) 
+freq1[tail(ord)] 
+```
+
+
+```{r}
+library(wordcloud)
+set.seed(142)   
+dark2 <- brewer.pal(6, "Dark2")   
+wordcloud(names(freq1), freq1, max.words=100, rot.per=0.2, colors=dark2)     
+
+```
+
+Because of failing to loop 20 times....
+```{r}
+a2 <- read.csv("C:/temp/t20.csv", header = TRUE)
+b2 <- as.data.frame(a2$keyword)
+ds2 <- DataframeSource(b2)
+corpus2 <- Corpus(ds2)
+tdm2 = TermDocumentMatrix(corpus2,control = list(stopwords = TRUE, removePunctuation = TRUE, stemming = TRUE)) 
+freq2 <- rowSums(as.matrix(tdm2))   
+#doc2 <- colSums(as.matrix(tdm2))
+length(freq2) 
+#length(doc2) 
+#x <- doc2*0.05
+ord <- order(freq2) 
+freq2[tail(ord)] 
+set.seed(142)   
+dark2 <- brewer.pal(6, "Dark2")   
+wordcloud(names(freq2), freq2,scale=c(6,1), max.words=30, rot.per=0, colors=dark2)   
+```
+
+
+
+
+
+
+
+### Selecting ‘k’ Using ‘Elbow Method’
+
+  more automated approach to picking ‘k’. For every kmeans object returned by R, there is a metric tot.withinss that provides the total of the squared distance metric for each cluster.
+
+```{r}
+#accumulator for cost results
+cost_df <- data.frame()
+
+#run kmeans for all clusters up to 100
+for(i in 1:100){
+  #Run kmeans for each level of i, allowing up to 100 iterations for convergence
+  kmeans<- kmeans(x=dtm, centers=i, iter.max=100)
+  
+  #Combine cluster number and cost together, write to df
+  cost_df<- rbind(cost_df, cbind(i, kmeans$tot.withinss))
+
+}
+names(cost_df) <- c("cluster", "cost")
+
+cost_df
+```
+
+elbow plot
+```{r}
+#Calculate lm's for emphasis
+lm(cost_df$cost[1:10] ~ cost_df$cluster[1:10])
+lm(cost_df$cost[10:19] ~ cost_df$cluster[10:19])
+lm(cost_df$cost[20:100] ~ cost_df$cluster[20:100])
+
+cost_df$fitted <- ifelse(cost_df$cluster <10, (19019.9 - 550.9*cost_df$cluster), 
+                         ifelse(cost_df$cluster <20, (15251.5 - 116.5*cost_df$cluster),
+                         (13246.1 - 35.9*cost_df$cluster)))
+
+#Cost plot
+ggplot(data=cost_df, aes(x=cluster, y=cost, group=1)) + 
+theme_bw(base_family="Garamond") + 
+geom_line(colour = "darkgreen") +
+theme(text = element_text(size=20)) +
+ggtitle("Reduction In Cost For Values of 'k'\n") +
+xlab("\nClusters") + 
+ylab("Within-Cluster Sum of Squares\n") +
+scale_x_continuous(breaks=seq(from=0, to=100, by= 10)) +
+geom_line(aes(y= fitted), linetype=2)
+```
+
+sc: https://www.r-bloggers.com/clustering-search-keywords-using-k-means-clustering/ 
+
+
+
+
+
+
+Clustering the Words of William Shakespeare
+https://www.r-bloggers.com/clustering-the-words-of-william-shakespeare/
+
+http://www.rdatamining.com/docs/data-clustering-with-r
+
