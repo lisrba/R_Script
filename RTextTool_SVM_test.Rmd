@@ -1,0 +1,84 @@
+# Support Vector Machine: a kernel machine
+
+## The most popular kernel functions are 
+1. the linear kernel: text classification, why?
+  (1) Text is often linearly separable
+  (2) Text has a lot of features
+  (3) Linear kernel is faster:  LibLinear(library)
+  (4) Less parameters to optimize: only need to optimize the C    regularization parameter
+
+2. the polynomial kernel
+3. the RBF (Gaussian) kernel
+4. the string kernel
+
+sc: http://www.svm-tutorial.com/2014/10/svm-linear-kernel-good-text-classification/
+
+# Practice 
+
+```{r}
+library("RTextTools");
+library("tm")
+data <- read.csv('C:/temp/sunnyData.csv', header = TRUE)
+data
+```
+
+
+```{r}
+# Create the document term matrix
+dtMatrix <- create_matrix(data["Text"])
+dtMatrix
+```
+
+sparse/sparsity(稀疏):decide whether we should use a linear kernel.
+
+```{r}
+# Configure the training data
+container <- create_container(dtMatrix, data$IsSunny, trainSize=1:11, virgin=FALSE)
+container
+ 
+# train a SVM Model
+model <- train_model(container, "SVM", kernel="linear", cost=1)
+model
+```
+
+create_container and train_model  methods are RTextTools methods.
+
+the virgin=FALSE argument is here to tell RTextTools not to save an analytics_virgin-class object inside the container. This parameter does not interest us now but is required by the function.
+
+```{r}
+# new data
+predictionData <- list("sunny sunny sunny rainy rainy", "rainy sunny rainy rainy", "hello", "", "this is another rainy world")
+predictionData
+
+#trace("create_matrix",edit=T)
+# In the source code box that pops up, line 42 will have a misspelling of the word "acronym". Change the "A" to an "a" and hit "Save" - it should work fine after that.
+
+# create a prediction document term matrix
+predMatrix <- create_matrix(predictionData,originalMatrix=dtMatrix)
+predMatrix
+```
+Notice that this time we provided the originalMatrix as a parameter. This is because we want the new matrix to use the same vocabulary as the training matrix.
+Without this indication, the function will create a document term matrix using all the words of the test data (rainy, sunny, hello, this, is, another, world). It means that each sentence will be represented by a vector containing 7 values (one for each word) !
+
+Such a matrix won't be compatible with the model we trained earlier because it expect vectors containing 2 values (one for rainy, one for sunny).
+
+```{r}
+# create the corresponding container
+predSize = length(predictionData);
+predictionContainer <- create_container(predMatrix, labels=rep(0,predSize), testSize=1:predSize, virgin=FALSE)
+```
+
+Two things are different:
+
+we use a zero vector for labels, because we want to predict them
+we specified testSize instead of trainingSize so that the data will be used for testing
+
+```{r}
+results <- classify_model(predictionContainer, model)
+results
+
+```
+
+the probability is only  52% which means our model is not very confident on these two predictions.
+
+sc: http://www.svm-tutorial.com/2014/11/svm-classify-text-r/
